@@ -7,5 +7,6 @@ namespace IBANValidation.Interface
     interface IValidateIBAN
     {
         bool Validate(string iban);
+        int GetCheckNumber(string iban);
     }
 }

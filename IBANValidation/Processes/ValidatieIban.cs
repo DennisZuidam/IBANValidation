@@ -21,6 +21,52 @@ namespace IBANValidation.Processes
             return Mod97(allNumbers);
         }
 
+        public int GetCheckNumber(string iban)
+        {
+            //Replace Country Code and add '00'
+            var ibanForCheckNo = ReplaceCountryCodeAddTwoZeros(iban);
+
+            var allNumbers = ChangeLettersToNumbers(ibanForCheckNo);
+
+            return CheckNumber(allNumbers);
+        }
+
+        private int CheckNumber(string allNumbers)
+        {
+            try
+            {
+                BigInteger toMod = BigInteger.Parse(allNumbers);
+                var afterMod = (toMod % 97).ToString();
+                return 98 - int.Parse(afterMod);
+            }
+            catch (Exception ex) { throw new Exception("Parsing to BigInteger failed..", ex); }
+
+        }
+
+        internal static string ReplaceCountryCodeAddTwoZeros(string iban)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(iban))
+                {
+                    //get country code
+                    var countryCode = iban?.Substring(0, iban.Length >= 4 ? 4 : iban.Length);
+                    var justCountry = countryCode.Substring(0, 2);
+
+                    //get rest of iban
+                    var lengtIban = iban.Length - countryCode.Length;
+                    var ibanWhitoutCountryCode = iban.Substring(4, lengtIban);
+
+                    return ibanWhitoutCountryCode + justCountry + "00";
+                }
+            }
+            catch
+            {
+                throw new Exception("IBAN is empty");
+            }
+            return null;
+        }
+
         internal static string AdjustCountryCode(string iban)
         {
             try
@@ -76,7 +122,7 @@ namespace IBANValidation.Processes
                 else
                     return false;
             }
-            catch(Exception ex) { throw new Exception("Parsing to Int32 failed..", ex); }
+            catch(Exception ex) { throw new Exception("Parsing to BigInteger failed..", ex); }
         }
     }
 }
